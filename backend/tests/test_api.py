@@ -52,6 +52,7 @@ def test_health_reports_device(client):
     assert body["status"] == "ok"
     assert body["device"] in ("cpu", "mps", "cuda")
     assert body["deviceTitle"]
+    assert isinstance(body["startedAt"], int)
 
 
 def test_protected_routes_require_session(client):

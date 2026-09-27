@@ -62,7 +62,9 @@ export function SourceDetail({ source, enabled }: { source: Source; enabled: boo
   const [loopNote, setLoopNote] = useState<number | null>(null);
   const previousLoop = useRef<number | null>(null);
 
-  const frame = live.data;
+  // Кадр принимается, только если он от этого источника: страховка на случай,
+  // если в подключение попадёт чужое сообщение.
+  const frame = live.data && live.data.sourceId === source.id ? live.data : null;
   // Числа «сейчас» — раз в секунду и медианой: иначе они дрожат с каждым кадром.
   const calm = useCalmLive(frame ?? null);
   const analysisReady = (frame?.frameIndex ?? -1) >= 0 && frame?.modelStatus === "ready";

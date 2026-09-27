@@ -6,7 +6,7 @@
  * (ТЗ, раздел 4.3 и 6.9).
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { websocketUrl } from "./client";
 import type { LiveMessage, SystemPulse } from "./types";
@@ -31,10 +31,6 @@ function useSocket<T>(path: string | null, enabled = true): Connection<T> {
     nextRetrySeconds: 0,
     receivedAt: null,
   });
-  const socketRef = useRef<WebSocket | null>(null);
-  const timerRef = useRef<number | null>(null);
-  const attemptRef = useRef(0);
-  const disposedRef = useRef(false);
 
   useEffect(() => {
     if (!path || !enabled) {
@@ -42,33 +38,38 @@ function useSocket<T>(path: string | null, enabled = true): Connection<T> {
       return;
     }
 
-    disposedRef.current = false;
-    attemptRef.current = 0;
+    // Всё состояние подключения — своё у каждого запуска эффекта. Раньше флаг
+    // «закрыто» был общим: закрытое подключение сообщало о закрытии уже после
+    // того, как новое сбросило флаг, решало, что связь оборвалась, и
+    // переподключалось к старому источнику. В просмотр тогда шли кадры двух
+    // источников вперемешку — разметка и рамки прыгали несколько раз в секунду.
+    let disposed = false;
+    let socket: WebSocket | null = null;
+    let timer: number | null = null;
+    let attempt = 0;
 
-    const clearTimer = () => {
-      if (timerRef.current !== null) {
-        window.clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
+    // Новый источник — прежний кадр больше не его.
+    setState({ data: null, link: "connecting", attempt: 0, nextRetrySeconds: 0, receivedAt: null });
 
     const connect = () => {
-      if (disposedRef.current) return;
+      if (disposed) return;
       setState((previous) => ({
         ...previous,
-        link: attemptRef.current === 0 ? "connecting" : "reconnecting",
-        attempt: attemptRef.current,
+        link: attempt === 0 ? "connecting" : "reconnecting",
+        attempt,
       }));
 
-      const socket = new WebSocket(websocketUrl(path));
-      socketRef.current = socket;
+      const current = new WebSocket(websocketUrl(path));
+      socket = current;
 
-      socket.onopen = () => {
-        attemptRef.current = 0;
+      current.onopen = () => {
+        if (disposed) return;
+        attempt = 0;
         setState((previous) => ({ ...previous, link: "live", attempt: 0, nextRetrySeconds: 0 }));
       };
 
-      socket.onmessage = (event) => {
+      current.onmessage = (event) => {
+        if (disposed) return;
         try {
           const parsed = JSON.parse(event.data) as T;
           setState((previous) => ({
@@ -82,29 +83,36 @@ function useSocket<T>(path: string | null, enabled = true): Connection<T> {
         }
       };
 
-      socket.onclose = () => {
-        if (disposedRef.current) return;
-        const delay = RETRY_STEPS_MS[Math.min(attemptRef.current, RETRY_STEPS_MS.length - 1)];
-        attemptRef.current += 1;
+      current.onclose = () => {
+        if (disposed) return;
+        const delay = RETRY_STEPS_MS[Math.min(attempt, RETRY_STEPS_MS.length - 1)];
+        attempt += 1;
         setState((previous) => ({
           ...previous,
           link: "reconnecting",
-          attempt: attemptRef.current,
+          attempt,
           nextRetrySeconds: Math.round(delay / 1000),
         }));
-        timerRef.current = window.setTimeout(connect, delay);
+        timer = window.setTimeout(connect, delay);
       };
 
-      socket.onerror = () => socket.close();
+      current.onerror = () => current.close();
     };
 
     connect();
 
     return () => {
-      disposedRef.current = true;
-      clearTimer();
-      socketRef.current?.close();
-      socketRef.current = null;
+      disposed = true;
+      if (timer !== null) window.clearTimeout(timer);
+      if (socket) {
+        // Обработчики снимаются: закрытое подключение не должно ни писать в
+        // состояние, ни переподключаться.
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.close();
+      }
     };
   }, [path, enabled]);
 

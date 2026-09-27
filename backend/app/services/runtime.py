@@ -211,6 +211,7 @@ class SourceWorker(threading.Thread):
             zones=config.markup.zones,
             params=config.markup.counting_params(CountingParams(anchor=config.markup.anchor)),
             timezone_offset_hours=utc_offset_hours(),
+            inside_per_loop=config.stream_url is None,
         )
         self._engine.entries_today = config.entries_today
         self._engine.exits_today = config.exits_today

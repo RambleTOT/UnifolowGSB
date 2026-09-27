@@ -103,7 +103,8 @@ export function MonitorPage() {
               selectedId={selected?.id ?? null}
               onSelect={(id) => update({ sourceId: id })}
             />
-            {selected && <SourceDetail source={selected} enabled={liveUpdates} />}
+            {/* Новый источник — новый просмотр: рамки, медианы и вспышки не переносятся. */}
+            {selected && <SourceDetail key={selected.id} source={selected} enabled={liveUpdates} />}
           </div>
         )}
       </DataBlock>

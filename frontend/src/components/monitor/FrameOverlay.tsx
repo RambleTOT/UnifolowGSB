@@ -33,6 +33,10 @@ const FLASH_MS = 1200;
 // от модели этого хватает, чтобы движение выглядело непрерывным.
 const FOLLOW_MS = 140;
 const FADE_IN_MS = 180;
+// Рамка появляется, только если трек продержался столько: короткие вспышки —
+// человек за стеллажом на долю секунды, отражение — на экране не мелькают.
+// Подсчёт устроен так же: проход засчитывается только подтверждённому треку.
+const SHOW_AFTER_MS = 350;
 const FADE_OUT_MS = 320;
 // Скачок больше этой доли кадра — это не движение, а новая сцена или сбой
 // сопровождения: такую рамку ставим сразу, без проезда через весь кадр.
@@ -41,6 +45,8 @@ const SNAP_DISTANCE = 0.2;
 type Box = [number, number, number, number];
 
 interface Shown {
+  /** Когда трек впервые появился — для задержки показа. */
+  born: number;
   bbox: Box;
   anchor: [number, number];
   alpha: number;
@@ -76,7 +82,7 @@ export function FrameOverlay({ frame, toggles, flashes, zoneCounts, smooth = tru
     const tick = (now: number) => {
       const elapsed = Math.min(now - previous, 250);
       previous = now;
-      follow(shown.current, props.current.frame, props.current.smooth, elapsed);
+      follow(shown.current, props.current.frame, props.current.smooth, elapsed, now);
       draw(canvas, parent, props.current, shown.current);
       raf = window.requestAnimationFrame(tick);
     };
@@ -89,7 +95,13 @@ export function FrameOverlay({ frame, toggles, flashes, zoneCounts, smooth = tru
 }
 
 /** Подтянуть показанные рамки к последнему кадру. */
-function follow(tracks: Map<number, Shown>, frame: LiveMessage | null, smooth: boolean, elapsed: number) {
+function follow(
+  tracks: Map<number, Shown>,
+  frame: LiveMessage | null,
+  smooth: boolean,
+  elapsed: number,
+  now: number,
+) {
   const objects = frame?.objects ?? [];
   const step = smooth ? 1 - Math.exp(-elapsed / FOLLOW_MS) : 1;
   const seen = new Set<number>();
@@ -100,6 +112,7 @@ function follow(tracks: Map<number, Shown>, frame: LiveMessage | null, smooth: b
     const current = tracks.get(object.trackId);
     if (!current || !smooth || distance(current.bbox, target) > SNAP_DISTANCE) {
       tracks.set(object.trackId, {
+        born: current?.born ?? now,
         bbox: [...target] as Box,
         anchor: [...object.anchor] as [number, number],
         alpha: current && smooth ? current.alpha : smooth ? 0 : 1,
@@ -121,7 +134,9 @@ function follow(tracks: Map<number, Shown>, frame: LiveMessage | null, smooth: b
 
   for (const [trackId, track] of tracks) {
     if (seen.has(trackId)) {
-      track.alpha = smooth ? Math.min(1, track.alpha + elapsed / FADE_IN_MS) : 1;
+      // Пока трек не продержался, он невидим; потом проявляется за FADE_IN_MS.
+      const confirmed = !smooth || now - track.born >= SHOW_AFTER_MS;
+      track.alpha = !smooth ? 1 : confirmed ? Math.min(1, track.alpha + elapsed / FADE_IN_MS) : 0;
       continue;
     }
     track.present = false;

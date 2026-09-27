@@ -36,6 +36,9 @@ rsync -az --ignore-existing \
   --exclude '*' \
   "$ROOT_DIR/data/" "$HOST:$REMOTE_DIR/data/"
 
+# Время сервера перед сборкой: новая версия запустится позже него.
+BUILD_FROM="$(ssh "$HOST" date +%s)"
+
 ssh "$HOST" "REMOTE_DIR='$REMOTE_DIR' ADDRESS='$ADDRESS' bash -s" <<'REMOTE'
 set -euo pipefail
 cd "$REMOTE_DIR"
@@ -56,19 +59,24 @@ if [ ! -f deploy/certs/server.crt ]; then
 fi
 
 # Сборка идёт на сервере отдельно от SSH: оборвётся соединение — она доработает.
-setsid nohup docker compose up -d --build > deploy.log 2>&1 < /dev/null &
+# Контейнеры пересоздаются всегда, даже если образ не изменился: иначе выкладка
+# не отличила бы «уже запущено» от «ещё собирается».
+setsid nohup docker compose up -d --build --force-recreate > deploy.log 2>&1 < /dev/null &
 echo "Сборка и запуск идут на сервере, журнал: $REMOTE_DIR/deploy.log"
 REMOTE
 
 # Ждём по публичному адресу, а не по SSH: долгая сессия через нестабильную
-# сеть рвётся, а HTTPS-запросы короткие.
-echo "Жду, пока приложение ответит (первая сборка — 5–10 минут)..."
+# сеть рвётся, а HTTPS-запросы короткие. Пока идёт сборка, отвечает прежняя
+# версия, поэтому готовность — это ответ процесса, запущенного после сборки.
+echo "Жду, пока ответит новая версия (сборка — 5–10 минут)..."
 for _ in $(seq 1 90); do
-  if curl -fsSk -m 8 -o /dev/null "https://$ADDRESS/api/health"; then
+  started="$(curl -fsSk -m 8 "https://$ADDRESS/api/health" 2>/dev/null \
+    | sed -n 's/.*"startedAt":\([0-9]*\).*/\1/p' || true)"
+  if [ -n "$started" ] && [ "$started" -ge "$BUILD_FROM" ]; then
     echo "Готово: https://$ADDRESS"
     exit 0
   fi
   sleep 10
 done
-echo "Приложение не ответило за 15 минут. Журнал сборки: ssh $HOST tail -50 $REMOTE_DIR/deploy.log"
+echo "Новая версия не ответила за 15 минут. Журнал сборки: ssh $HOST tail -50 $REMOTE_DIR/deploy.log"
 exit 1

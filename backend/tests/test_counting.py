@@ -225,3 +225,21 @@ def test_reset_tracks_keeps_counters_and_prevents_false_crossing(engine):
     assert engine.entries_today == 1
     assert engine.exits_today == 0
     assert engine.loop_number == 1  # в отличие от границы круга, круг не меняется
+
+
+def test_inside_now_for_looped_file_is_counted_per_loop():
+    engine = CountingEngine(lines=[LINE], zones=[QUEUE_ZONE], inside_per_loop=True)
+    walk(engine, 1, [(0.5, 0.75), (0.5, 0.68), (0.5, 0.60), (0.5, 0.40), (0.5, 0.30)])
+    assert engine.entries_today == 1
+    engine.start_new_loop()
+
+    # Новый круг: вошедший в прошлом круге уже не «внутри», а за сутки он учтён.
+    result = walk(engine, 2, [(0.5, 0.70)], start=1100.0)[0]
+    assert result.inside_now == 0
+    assert result.entries_today == 1
+
+
+def test_inside_now_for_live_camera_is_counted_per_day(engine):
+    walk(engine, 1, [(0.5, 0.75), (0.5, 0.68), (0.5, 0.60), (0.5, 0.40), (0.5, 0.30)])
+    result = walk(engine, 2, [(0.5, 0.70)], start=1100.0)[0]
+    assert result.inside_now == 1

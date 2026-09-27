@@ -179,11 +179,17 @@ class CountingEngine:
         zones: Sequence[ZoneSpec] = (),
         params: CountingParams | None = None,
         timezone_offset_hours: float = 0.0,
+        inside_per_loop: bool = False,
     ) -> None:
         self.lines: tuple[LineSpec, ...] = tuple(lines)
         self.zones: tuple[ZoneSpec, ...] = tuple(zones)
         self.params = params or CountingParams()
         self.timezone_offset_hours = timezone_offset_hours
+        # «Внутри сейчас» для файла по кругу считается за круг: на границе круга
+        # сцена начинается заново, и вошедшие в прошлом круге уже не «внутри».
+        # Иначе в ролике, где люди идут в одну сторону, «внутри» росло бы с каждым
+        # кругом без конца. Для живой камеры — за сутки, как на настоящем проходе.
+        self.inside_per_loop = inside_per_loop
 
         self._tracks: dict[int, _TrackState] = {}
         self._orphans: list[_OrphanWait] = []
@@ -336,7 +342,11 @@ class CountingEngine:
             line_counters={key: dict(value) for key, value in self._line_counters.items()},
             entries_today=self.entries_today,
             exits_today=self.exits_today,
-            inside_now=max(0, self.entries_today - self.exits_today),
+            inside_now=(
+                max(0, self.loop_entries - self.loop_exits)
+                if self.inside_per_loop
+                else max(0, self.entries_today - self.exits_today)
+            ),
             loop_number=self.loop_number,
             loop_entries=self.loop_entries,
             loop_exits=self.loop_exits,
