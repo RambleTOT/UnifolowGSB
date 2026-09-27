@@ -1,0 +1,23 @@
+{
+  "source": "КПП 1",
+  "anchor": "bottom_center",
+  "lines": [
+    {
+      "id": "line-main",
+      "name": "Основной проход",
+      "a": [0.72, 0.70],
+      "b": [0.72, 1.00],
+      "entry_side": -1,
+      "counts": "both"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-lobby",
+      "name": "Тамбур",
+      "kind": "occupancy",
+      "capacity": 5,
+      "polygon": [[0.30, 0.74], [0.99, 0.74], [0.99, 0.99], [0.30, 0.99]]
+    }
+  ]
+}

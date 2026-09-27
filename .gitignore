@@ -1,0 +1,32 @@
+# Данные и модели
+data/videos/*
+# Разметка демо-роликов маленькая и нужна для первого старта — она в репозитории.
+!data/videos/*.markup.json
+!data/videos/*.stream.json
+data/cache/
+data/snapshots/
+# База и любые её копии: в них учётные записи и накопленные данные.
+data/*.db*
+data/backup/
+*.pt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Окружение
+.env
+.env.local
+
+# ОС
+.DS_Store
+
+# Сертификат сервера выпускается на месте и в репозиторий не попадает.
+deploy/certs/

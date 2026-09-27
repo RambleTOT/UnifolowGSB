@@ -1,0 +1,30 @@
+{
+  "source": "Раздача",
+  "anchor": "bottom_center",
+  "lines": [
+    {
+      "id": "line-serving",
+      "name": "Линия раздачи",
+      "a": [0.02, 0.72],
+      "b": [0.95, 0.72],
+      "entry_side": -1,
+      "counts": "both"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-queue",
+      "name": "Очередь к раздаче",
+      "kind": "queue",
+      "min_dwell_seconds": 4,
+      "polygon": [[0.03, 0.73], [0.97, 0.73], [0.97, 0.99], [0.03, 0.99]]
+    },
+    {
+      "id": "zone-hall",
+      "name": "Зал раздачи",
+      "kind": "occupancy",
+      "capacity": 8,
+      "polygon": [[0.02, 0.35], [0.97, 0.35], [0.97, 0.99], [0.02, 0.99]]
+    }
+  ]
+}

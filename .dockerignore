@@ -1,0 +1,13 @@
+# В образ идут только код и собранный интерфейс: данные живут в томе data/.
+.git
+.venv
+apps
+data
+deploy
+docs
+frontend/node_modules
+frontend/dist
+**/__pycache__
+**/.pytest_cache
+*.pt
+.env

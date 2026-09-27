@@ -1,0 +1,35 @@
+services:
+  uniflow:
+    build: .
+    env_file:
+      - .env
+    environment:
+      UNIFLOW_ENV: server
+      UNIFLOW_HOST: 0.0.0.0
+      UNIFLOW_PORT: "8000"
+      # На сервере без видеокарты ролики считаются заранее, один раз. Прямой
+      # поток с камеры анализируется в реальном времени при любом режиме.
+      UNIFLOW_DEVICE: cpu
+      UNIFLOW_ANALYSIS_MODE: precomputed
+      UNIFLOW_DATABASE_URL: sqlite:////app/data/uniflow.db
+      UNIFLOW_VIDEO_DIR: /app/data/videos
+      UNIFLOW_SNAPSHOT_DIR: /app/data/snapshots
+      UNIFLOW_CACHE_DIR: /app/data/cache
+    volumes:
+      - ./data:/app/data
+    # Наружу приложение не публикуется: вход только через edge.
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  edge:
+    image: nginx:1.27-alpine
+    depends_on:
+      - uniflow
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+    restart: unless-stopped

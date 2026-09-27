@@ -1,0 +1,85 @@
+/* Токены дизайна: значения взяты из макетов «UniFlow Analytics».
+   Тема одна, светлая — по решению пользователя (см. docs/DEVIATIONS.md). */
+
+:root {
+  /* Шрифты и типографика */
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-text: "Source Sans 3", system-ui, sans-serif;
+  --size-xs: 11px;
+  --size-sm: 12px;
+  --size-md: 13px;
+  --size-base: 14px;
+  --size-lg: 15px;
+  --size-xl: 17px;
+  --size-2xl: 20px;
+  --size-3xl: 24px;
+  --size-metric: 30px;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Отступы */
+  --gap-1: 4px;
+  --gap-2: 6px;
+  --gap-3: 8px;
+  --gap-4: 10px;
+  --gap-5: 12px;
+  --gap-6: 16px;
+  --gap-7: 22px;
+  --gap-8: 28px;
+
+  /* Скругления */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* Тени */
+  --shadow-card: 0 1px 2px rgba(22, 24, 29, 0.04);
+  --shadow-raised: 0 8px 24px rgba(22, 24, 29, 0.08);
+  --shadow-overlay: 0 12px 30px rgba(22, 24, 29, 0.12);
+
+  /* Поверхности и текст */
+  --bg-page: #f8f9fb;
+  --bg-surface: #ffffff;
+  --bg-muted: #f2f4f8;
+  --bg-subtle: #eef1f6;
+  --bg-media: #0f1b2e;
+  --border: #e7eaf0;
+  --border-strong: #d9dee7;
+  --text-primary: #16181d;
+  --text-secondary: #454b57;
+  --text-muted: #6b7480;
+  --text-faint: #8992a2;
+  --text-on-accent: #ffffff;
+
+  /* Акцент */
+  --accent: #1b5fcb;
+  --accent-hover: #144aa3;
+  --accent-soft: #e9f0fc;
+  --accent-border: #bed2f4;
+  --accent-on-dark: #9fc0f5;
+
+  /* Смысловые цвета: уровни показателей, приоритеты, статусы */
+  --danger: #9e2f24;
+  --danger-strong: #b3352a;
+  --danger-soft: #fdf6f5;
+  --danger-border: #efd3cf;
+  --warning: #9a6b12;
+  --warning-soft: #fcf5e9;
+  --warning-border: #efdcbb;
+  --warning-accent: #ffc44d;
+  --success: #1b6b4e;
+  --success-strong: #14573d;
+  --success-soft: #eefaf3;
+  --success-border: #c7ecd9;
+  --success-accent: #7fe3b0;
+
+  /* Наложение аналитики поверх кадра */
+  --overlay-moving: #1b5fcb;
+  --overlay-queue: #1b6b4e;
+  --overlay-crossing: #f5a623;
+  --overlay-zone-queue: #4b84ff;
+  --overlay-zone-occupancy: #5ac08a;
+  --overlay-line: #f5a623;
+}

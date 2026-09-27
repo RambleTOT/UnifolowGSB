@@ -1,0 +1,26 @@
+{
+  "source": "КПП 2",
+  "stream_url": "https://streamer.camera.rt.ru/public/master.m3u8?sid=ac4ad2e3-8615-4d5b-90dc-3f6a57d9a589",
+  "model_profile": "far",
+  "location": "Прямой эфир · Дворцовая площадь",
+  "anchor": "bottom_center",
+  "lines": [
+    {
+      "id": "line-square",
+      "name": "Поток через площадь",
+      "a": [0.47, 0.66],
+      "b": [0.47, 0.86],
+      "entry_side": -1,
+      "counts": "both"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-square",
+      "name": "Ближняя часть площади",
+      "kind": "occupancy",
+      "capacity": 60,
+      "polygon": [[0.0, 0.66], [0.99, 0.66], [0.99, 0.90], [0.0, 0.90]]
+    }
+  ]
+}

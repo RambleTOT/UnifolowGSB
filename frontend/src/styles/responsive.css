@@ -1,0 +1,160 @@
+/*
+ * Узкие экраны. Каркас и страницы рассчитаны на широкий монитор, здесь — всё,
+ * что меняется на небольшом ноутбуке, планшете и телефоне. Подключается
+ * последним, чтобы переопределять остальные стили.
+ */
+
+/* Кнопка меню и подложка нужны только там, где меню выезжает поверх. */
+.topbar__menu { display: none; }
+.shell__backdrop { display: none; }
+
+/* Подписи в переключателях и индикаторах не переносятся по словам. */
+.segmented__item,
+.data-status__button,
+.demo-badge,
+.user-menu__button { white-space: nowrap; }
+
+/*
+ * Шапка панели: когда кнопкам действий тесно рядом с заголовком, они уходят
+ * под него и переносятся — на любой ширине, а не только на телефоне.
+ * Иначе у карточки источника последние кнопки обрезались краем панели.
+ */
+.panel__head { flex-wrap: wrap; }
+.panel__actions { flex: 0 1 auto; min-width: 0; flex-wrap: wrap; }
+
+/*
+ * Верхняя панель. Поиску, восьми переключателям и инструментам в одной строке
+ * нужно около 1400 пикселей. Пока их нет, фильтры уходят во второй ряд, а не
+ * сжимают поиск и не ломают подписи. Меряется ширина области содержимого, а не
+ * окна: со свёрнутым меню места больше.
+ */
+.shell__main { container: main / inline-size; }
+
+@container main (max-width: 1400px) {
+  .topbar { flex-wrap: wrap; row-gap: var(--gap-3); }
+  .search { order: 1; flex: 1 1 240px; max-width: 420px; }
+  .topbar__tools { order: 2; margin-left: auto; }
+  .topbar__filters { order: 3; flex: 1 1 100%; }
+}
+
+/* Планшет и телефон: меню выезжает по кнопке. */
+@media (max-width: 860px) {
+  .shell,
+  .shell--collapsed { grid-template-columns: minmax(0, 1fr); }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(300px, 86vw);
+    height: 100dvh;
+    overflow-y: auto;
+    transform: translateX(-102%);
+    transition: transform 0.22s ease;
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .shell--menu .sidebar { transform: none; }
+
+  .shell--menu .shell__backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(15, 27, 46, 0.38);
+  }
+
+  .sidebar__collapse { display: none; }
+
+  .topbar { padding: 10px 16px; gap: 10px; }
+  .topbar__menu { display: inline-grid; place-items: center; order: 0; font-size: 18px; }
+  .shell__content { padding: 20px 16px 40px; }
+  .shell__offline,
+  .critical-banner { margin-left: 16px; margin-right: 16px; }
+
+  .login { grid-template-columns: minmax(0, 1fr); }
+  .login__side { display: none; }
+}
+
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
+}
+
+/* Телефон */
+@media (max-width: 560px) {
+  /* Период и контур листаются вбок одной строкой, а не громоздятся. */
+  .topbar__filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -16px;
+    padding: 0 16px 2px;
+  }
+  .topbar__filters::-webkit-scrollbar { display: none; }
+  .segmented { flex: none; }
+  .segmented__item { padding: 5px 12px; }
+  .search { flex: 1 1 120px; min-width: 0; }
+  .topbar__tools { gap: 6px; }
+  .user-menu__name { display: none; }
+  .user-menu__button { padding: 4px; }
+  .data-status__text { display: none; }
+  .data-status__button { padding: 8px 10px; }
+
+  /* Выпадающие списки — во всю ширину экрана, а не от края кнопки. */
+  .search__results,
+  .notifications__list,
+  .data-status__list {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: 64px;
+    width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .page { gap: var(--gap-5); }
+  .page__header { flex-wrap: wrap; }
+  .page__title { font-size: var(--size-2xl); }
+  .panel__head { flex-wrap: wrap; padding: 14px; }
+  /* Действия панели уходят под заголовок и переносятся, а не обрезаются краем. */
+  .panel__actions { flex: 1 1 100%; flex-wrap: wrap; }
+
+  .playback__line { flex-wrap: wrap; gap: var(--gap-3); }
+  .stage { padding: 12px; }
+
+  /* Тепловая карта из 24 часов листается внутри своей панели. */
+  .heatmap { overflow-x: auto; }
+  .heatmap__hours,
+  .heatmap__row { min-width: 520px; }
+
+  /* Показатели — по два в ряд и компактнее: иначе шесть карточек занимают два экрана. */
+  .metrics-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .metric { padding: 12px; }
+  .metric__label { font-size: var(--size-sm); }
+  .metric__value { font-size: 26px; }
+  .metric__change,
+  .metric__note { font-size: var(--size-sm); }
+
+  /* Фильтры журнала — по два в ряд, поиск во всю ширину. */
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .filters > :first-child { grid-column: 1 / -1; }
+
+  /* Сведения об источнике — в две колонки; длинное имя файла переносится. */
+  .source-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .source-grid__item strong { overflow-wrap: anywhere; }
+
+  /* Доли: подпись над полосой, иначе длинное название ломается в три строки. */
+  .share-bars__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "label label" "track value";
+    row-gap: 6px;
+  }
+  .share-bars__label { grid-area: label; }
+  .share-bars__track { grid-area: track; }
+  .share-bars__value { grid-area: value; }
+  .markup__frame-controls input[type="range"] { min-width: 0; }
+  /* После переноса кнопок разделители групп повисали бы в начале строк. */
+  .markup__divider { display: none; }
+  .form-actions { flex-wrap: wrap; }
+}

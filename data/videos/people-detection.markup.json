@@ -1,0 +1,70 @@
+{
+  "source": "Столовая",
+  "anchor": "bottom_center",
+  "lines": [
+    {
+      "id": "line-main",
+      "name": "Основной проход",
+      "a": [
+        0.12,
+        0.55
+      ],
+      "b": [
+        0.88,
+        0.55
+      ],
+      "entry_side": -1,
+      "counts": "both"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-queue",
+      "name": "Зона ожидания",
+      "kind": "queue",
+      "min_dwell_seconds": 2,
+      "polygon": [
+        [
+          0.08,
+          0.6
+        ],
+        [
+          0.55,
+          0.6
+        ],
+        [
+          0.55,
+          0.98
+        ],
+        [
+          0.08,
+          0.98
+        ]
+      ]
+    },
+    {
+      "id": "zone-hall",
+      "name": "Зал",
+      "kind": "occupancy",
+      "capacity": 20,
+      "polygon": [
+        [
+          0.05,
+          0.35
+        ],
+        [
+          0.95,
+          0.35
+        ],
+        [
+          0.95,
+          0.99
+        ],
+        [
+          0.05,
+          0.99
+        ]
+      ]
+    }
+  ]
+}
